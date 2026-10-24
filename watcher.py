@@ -36,15 +36,18 @@ from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
 
 # --- 1. DIRECTORY STRUCTURE & CONFIGURATION ---
+IS_VERCEL = bool(os.environ.get("VERCEL"))
 BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = Path("/tmp") if IS_VERCEL else BASE_DIR
+
 ENV_PATH = BASE_DIR / ".env"
 load_dotenv(dotenv_path=ENV_PATH)
 
-INCOMING_DIR = BASE_DIR / "incoming_images"
+INCOMING_DIR = DATA_DIR / "incoming_images"
 PROCESSED_DIR = BASE_DIR / "processed_images"
-UNRELATED_DIR = BASE_DIR / "unrelated_images"
-PENDING_DIR = BASE_DIR / "pending_queue"
-LOGS_DIR = BASE_DIR / "logs"
+UNRELATED_DIR = DATA_DIR / "unrelated_images"
+PENDING_DIR = DATA_DIR / "pending_queue"
+LOGS_DIR = DATA_DIR / "logs"
 
 DB_PATH = LOGS_DIR / "greenhouse.db"
 TEXT_LOG_PATH = LOGS_DIR / "greenhouse_log.txt"
@@ -61,8 +64,11 @@ SUPPORTED_EXTENSIONS = {".jpg", ".jpeg", ".png"}
 
 def ensure_directories() -> None:
     """Creates the managed directories if they do not exist."""
-    for folder in [INCOMING_DIR, PROCESSED_DIR, UNRELATED_DIR, PENDING_DIR, LOGS_DIR]:
-        folder.mkdir(parents=True, exist_ok=True)
+    for folder in [INCOMING_DIR, UNRELATED_DIR, PENDING_DIR, LOGS_DIR]:
+        try:
+            folder.mkdir(parents=True, exist_ok=True)
+        except Exception:
+            pass
 
 
 def load_api_keys() -> List[str]:

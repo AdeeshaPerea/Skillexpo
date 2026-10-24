@@ -62,15 +62,21 @@ if hasattr(sys.stderr, "reconfigure"):
         pass
 
 # Paths & Network Config
+IS_VERCEL = bool(os.environ.get("VERCEL"))
 BASE_DIR = Path(__file__).resolve().parent
-INCOMING_DIR = BASE_DIR / "incoming_images"
-PROCESSED_DIR = BASE_DIR / "processed_images"
-UNRELATED_DIR = BASE_DIR / "unrelated_images"
-PENDING_DIR = BASE_DIR / "pending_queue"
-LOGS_DIR = BASE_DIR / "logs"
+DATA_DIR = Path("/tmp") if IS_VERCEL else BASE_DIR
 
-for p in [INCOMING_DIR, PROCESSED_DIR, UNRELATED_DIR, PENDING_DIR, LOGS_DIR]:
-    p.mkdir(parents=True, exist_ok=True)
+INCOMING_DIR = DATA_DIR / "incoming_images"
+PROCESSED_DIR = BASE_DIR / "processed_images"
+UNRELATED_DIR = DATA_DIR / "unrelated_images"
+PENDING_DIR = DATA_DIR / "pending_queue"
+LOGS_DIR = DATA_DIR / "logs"
+
+for p in [INCOMING_DIR, UNRELATED_DIR, PENDING_DIR, LOGS_DIR]:
+    try:
+        p.mkdir(parents=True, exist_ok=True)
+    except Exception:
+        pass
 
 DB_PATH = LOGS_DIR / "greenhouse.db"
 
